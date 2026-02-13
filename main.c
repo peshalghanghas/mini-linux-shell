@@ -12,6 +12,8 @@
 //converts RAW command string into array of argument pointers
 void parse_input(char *input, char **args) {
     int i=0;
+
+ // strtok splits inputs into tokens that use space and newlines as delimiters   
     char *token = strtok(input, " \n");
     while(token != NULL && i < MAX_ARGS-1){
         args[i++]= token;
@@ -24,10 +26,10 @@ int main(){
     char input[MAX_INPUT];
     char *args[MAX_ARGS];
 
-// control center of the mini shell
+// shell main loop
     while(1){
         printf("mini-shell> ");
-        fflush(stdout);
+        fflush(stdout); //display shell prompt and flush
 
         if(fgets(input, sizeof(input), stdin)==NULL){
             printf("\n");
@@ -42,6 +44,7 @@ int main(){
             printf("Exiting shell...\n");
             break;
         }
+        //built-in cd command
         if (strcmp(args[0], "cd")==0){
             if(args[1]==NULL){
                 fprintf(stderr,"cd: missing argument\n");
@@ -53,7 +56,7 @@ int main(){
             }
             continue;
         }
-
+// create child process
         pid_t pid= fork();
 
         if(pid<0){
@@ -66,6 +69,9 @@ int main(){
             exit(1);
         }
         else{
+
+            // parent process
+            // wait for child process to finish
             wait(NULL);
         }
     }
