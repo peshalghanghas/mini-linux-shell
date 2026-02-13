@@ -1,0 +1,73 @@
+/*standard c libraries and unix system headers to build a unix or linux shell*/
+#include <stdio.h> // basic input output
+#include <stdlib.h> // utility library for memory allocation and handling
+#include <string.h> // lib for string handling
+#include <unistd.h> //used to create child processes and system level calls
+#include <sys/types.h> //define system data types 
+#include <sys/wait.h> //process waiting and termination
+
+#define MAX_INPUT 1024 //maximum length of command line input
+#define MAX_ARGS 64 //max number of arguments
+
+//converts RAW command string into array of argument pointers
+void parse_input(char *input, char **args) {
+    int i=0;
+    char *token = strtok(input, " \n");
+    while(token != NULL && i < MAX_ARGS-1){
+        args[i++]= token;
+        token = strtok(NULL, " \n");
+    }
+    args[i]=NULL;
+}
+
+int main(){
+    char input[MAX_INPUT];
+    char *args[MAX_ARGS];
+
+// control center of the mini shell
+    while(1){
+        printf("mini-shell> ");
+        fflush(stdout);
+
+        if(fgets(input, sizeof(input), stdin)==NULL){
+            printf("\n");
+            break;
+        }
+
+        parse_input(input, args);
+
+        if(args[0]==NULL)
+            continue;
+        if(strcmp(args[0], "exit")==0){
+            printf("Exiting shell...\n");
+            break;
+        }
+        if (strcmp(args[0], "cd")==0){
+            if(args[1]==NULL){
+                fprintf(stderr,"cd: missing argument\n");
+            }
+            else{
+                if (chdir(args[1])!=0){
+                    perror("cd failed");
+                }
+            }
+            continue;
+        }
+
+        pid_t pid= fork();
+
+        if(pid<0){
+            perror("Fork failed");
+        }
+        else if(pid==0){
+            if(execvp(args[0],args)<0){
+                perror("Execution failed");
+            }
+            exit(1);
+        }
+        else{
+            wait(NULL);
+        }
+    }
+    return 0;
+}
