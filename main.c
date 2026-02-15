@@ -8,6 +8,10 @@
 
 #define MAX_INPUT 1024 //maximum length of command line input
 #define MAX_ARGS 64 //max number of arguments
+#define HISTORY_SIZE 10
+
+char history[HISTORY_SIZE][MAX_INPUT];
+int history_count = 0;
 
 //converts RAW command string into array of argument pointers
 void parse_input(char *input, char **args) {
@@ -36,6 +40,14 @@ int main(){
             break;
         }
 
+        input[strcspn(input, "\n")] = 0;
+
+//store here
+        if (strlen(input)>0){
+            strncpy(history[history_count % HISTORY_SIZE], input, MAX_INPUT);
+            history_count++;
+        }
+
         parse_input(input, args);
 
         if(args[0]==NULL)
@@ -57,6 +69,15 @@ int main(){
             continue;
         }
 
+        // Built-in history
+        if (strcmp(args[0], "history") == 0) {
+            int start = history_count > HISTORY_SIZE ? history_count - HISTORY_SIZE : 0;
+            for (int i = start; i < history_count; i++) {
+                printf("%d %s\n", i + 1, history[i % HISTORY_SIZE]);
+            }
+            continue;
+        }
+
         int background = 0;
         int i=0;
 
@@ -69,7 +90,7 @@ int main(){
             args[i-1]=NULL;
         }
 
-
+        
 // create child process
         pid_t pid= fork();
 
