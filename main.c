@@ -56,6 +56,20 @@ int main(){
             }
             continue;
         }
+
+        int background = 0;
+        int i=0;
+
+        while (args[i] != NULL){
+            i++;
+        }
+
+        if (i> 0 && strcmp(args[i-1], "&")==0){
+            background =1;
+            args[i-1]=NULL;
+        }
+
+
 // create child process
         pid_t pid= fork();
 
@@ -72,7 +86,12 @@ int main(){
 
             // parent process
             // wait for child process to finish
-            wait(NULL);
+            if (!background){
+                wait(NULL);
+            }
+            else{
+                printf("Started background process with PID: %d\n", pid);
+            }
         }
     }
     return 0;
